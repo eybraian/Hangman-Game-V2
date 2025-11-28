@@ -1,6 +1,5 @@
 from database_manager import DatabaseManager
 import os
-import random
 import sys
 
 class HangmanGame:

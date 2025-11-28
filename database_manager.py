@@ -1,5 +1,5 @@
+from tabulate import tabulate
 import sqlite3
-import random
 import os
 
 class DatabaseManager: 
@@ -14,9 +14,8 @@ class DatabaseManager:
     def populate_if_empty(self):
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS WordsDatabase (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            word TEXT NOT NULL,
-            played BOOLEAN NOT NULL DEFAULT 0);
+        word TEXT PRIMARY KEY,
+        played BOOLEAN NOT NULL DEFAULT 0);
         ''')
         
         self.cursor.execute("SELECT COUNT(*) FROM WordsDatabase")
@@ -41,10 +40,17 @@ class DatabaseManager:
         print('Word '+ unwanted_word + ' sucessfuly removed!')
 
     def show_database(self):
-        self.cursor.execute("SELECT * FROM WordsDatabase")
+        self.cursor.execute("SELECT * FROM WordsDatabase ORDER BY word ASC")
         rows = self.cursor.fetchall()
+
+        formatted_rows = []
         for row in rows:
-            print(f"ID: {row[0]}, Word: {row[1]}, Played: {row[2]}")
+            played_status_icon = "✓" if row[1] else "X"
+            formatted_rows.append([row[0], played_status_icon])
+
+        headers = ["Word", "Played"]
+        print("\n=== WORD DATABASE ===")
+        print(tabulate(formatted_rows, headers=headers, tablefmt="grid"))
 
     def manage_database(self):
         while True:
