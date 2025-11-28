@@ -3,17 +3,17 @@ import os
 import random
 import sys
 
-class JogoForca:
+class HangmanGame:
     def __init__(self):
         self.db = DatabaseManager()
 
-    def limpar_tela(self):
+    def clean_screen(self):
         _ = os.system('cls')
 
-    def status_desenho(self, erros):
-        self.erros = erros
+    def drawing_status(self, mistakes):
+        self.mistakes = mistakes
 
-        match erros:
+        match mistakes:
             case 0:
                 print('''
                 +---+
@@ -78,30 +78,23 @@ class JogoForca:
                     |
                 =========''')
 
-    def jogar(self):
-        self.limpar_tela()
+    def play(self):
+        self.clean_screen()
         self.db.populate_if_empty()
-        
-        #file_handle = open(r"randomlist.txt")
-        #words = file_handle.readlines()
-        #qty_words = len(words)
-        #random_number = random.randint(0, qty_words - 1)
-        #chosen = words[random_number]
-
-        chosen = self.db.get_palavra_jogo()
+        chosen = self.db.get_game_word()
         chosen = chosen.upper()
         game_word = list(chosen)
         hidden_word = ["_"] * len(game_word)
-        erros = 0
+        mistakes = 0
         wrong_words = list()
         
-        while erros < 6:
+        while mistakes < 6:
             win = False
-            self.limpar_tela()
-            self.status_desenho(erros)
+            self.clean_screen()
+            self.drawing_status(mistakes)
             print(hidden_word, "\n")
             print(">>> Wrong words: ", wrong_words)
-            error_tracking = 6 - erros
+            error_tracking = 6 - mistakes
             print(">>> You still have: " + str(error_tracking) + " attempts!\n")
             guess = str(input("Type your letter:\n"))
             guess = guess.upper()
@@ -109,76 +102,79 @@ class JogoForca:
             if guess in game_word:
                 for i in range(0, len(game_word)):
                     if guess == game_word[i]:
-                        print("Well done!!")
                         hidden_word[i] = guess
                 if "_" not in hidden_word:
+                    self.clean_screen()
                     print("\n*****You won!!*****")
+                    self.drawing_status(mistakes)
                     win = True
                 print("\n")
                 print(hidden_word)
                 print("\n")
+                
 
             else:
                 if guess not in wrong_words:
-                    erros = erros + 1
+                    mistakes = mistakes + 1
                     wrong_words.append(guess)
 
             if win:
+                input("Press any key to continue:")
                 break
 
-        if erros == 6:
-            self.limpar_tela()
-            self.status_desenho(erros)
+        if mistakes == 6:
+            self.clean_screen()
+            self.drawing_status(mistakes)
             print("***No more attempts!***")
             print("Word: "+ chosen +"")
             print("***You lost!***")
             print("""
-            1. Jogar novamente
-            2. Voltar ao menu
-            3. Sair do Programa
+            1. Play again
+            2. Return to Menu
+            3. Exit program
             """)
-            escolha_replay = input("Digite sua escolha (1-3): ")
-            if escolha_replay == "1":
-                self.jogar()
-            elif escolha_replay == "2":
+            replay_choice = input("Type your choice (1-3): ")
+            if replay_choice == "1":
+                self.play()
+            elif replay_choice == "2":
                 pass
-            elif escolha_replay == "3":
-                self.limpar_tela()
-                print("Obrigado por Jogar!")
+            elif replay_choice == "3":
+                self.clean_screen()
+                print("Thanks for playing!")
                 sys.exit()
 
-    def add_palavra(self):
-        self.db.gerenciar_banco()
+    def add_word(self):
+        self.db.add_word()
 
     def reset_db_status(self):
         self.db.reset_db_status()
 
-    def gerenciar_banco(self):
-        self.db.gerenciar_banco()
+    def database_menu(self):
+        self.db.manage_database()
 
-    def menu_principal(self):
+    def main_menu(self):
         while True:
-            self.limpar_tela()
+            self.clean_screen()
             print("""
-            === JOGO DA FORCA ===\n
-            1. Jogar
-            2. Resetar Palavras Jogadas
-            3. Gerenciar Banco de Palavras
-            4. Sair
+            === HANGMAN GAME ===\n
+            1. Play 
+            2. Reset Played Words
+            3. Manage Word Database
+            4. Exit
             """)
-            escolha = input("Digite sua escolha (1-4): ")
+            escolha = input("Type your choice (1-4): ")
             match escolha:
                 case '1': 
-                    self.jogar()
+                    self.play()
                 case '2': 
                     self.reset_db_status()
                 case '3': 
-                    self.gerenciar_banco()
+                    self.database_menu()
                 case '4': 
-                    self.limpar_tela()
-                    print("Obrigado por Jogar!")
+                    self.clean_screen()
+                    print("Thanks for playing!")
                     break
 
 if __name__ == "__main__":
-    jogo = JogoForca()
-    jogo.menu_principal()
+    jogo = HangmanGame()
+    jogo.main_menu()

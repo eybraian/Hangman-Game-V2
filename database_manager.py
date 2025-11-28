@@ -8,92 +8,92 @@ class DatabaseManager:
         self.cursor = self.connection.cursor()
         self.populate_if_empty()
 
-    def limpar_tela(self):
+    def clean_screen(self):
         _ = os.system('cls')
     
     def populate_if_empty(self):
         self.cursor.execute('''
-        CREATE TABLE IF NOT EXISTS palavras (
+        CREATE TABLE IF NOT EXISTS WordsDatabase (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             word TEXT NOT NULL,
             played BOOLEAN NOT NULL DEFAULT 0);
         ''')
         
-        self.cursor.execute("SELECT COUNT(*) FROM palavras")
+        self.cursor.execute("SELECT COUNT(*) FROM WordsDatabase")
         count = self.cursor.fetchone()[0]
         
         if count == 0:
             sample_words = ['AVOCADO', 'GRAPE', 'WATERMELON', 'SCISSORS', 'GUITAR', 'DOORBEL', 'FILE', 'DOOR', 'WINDOW', 'SOCCER', 'COMPUTER', 'HORSE']
             for word in sample_words:
-                self.cursor.execute("INSERT INTO palavras (word) VALUES (?)", (word,))
+                self.cursor.execute("INSERT INTO WordsDatabase (word) VALUES (?)", (word,))
         
         self.connection.commit()
 
-    def add_palavra(self, nova_palavra):
-        if nova_palavra.strip():
-            self.cursor.execute("INSERT INTO palavras (word) VALUES (?)", (nova_palavra.upper(),))
+    def add_word(self, new_word):
+        if new_word.strip():
+            self.cursor.execute("INSERT INTO WordsDatabase (word) VALUES (?)", (new_word.upper(),))
             self.connection.commit()
-            print('Palavra '+ nova_palavra + ' adicionada com sucesso!')
+            print('Word '+ new_word + ' sucessfuly added!')
 
-    def remove_palavra(self, palavra_indesejada):
-        self.cursor.execute("DELETE FROM palavras WHERE word = ?", (palavra_indesejada.upper(),))
+    def remove_word(self, unwanted_word):
+        self.cursor.execute("DELETE FROM WordsDatabase WHERE word = ?", (unwanted_word.upper(),))
         self.connection.commit()
-        print('Palavra '+ palavra_indesejada + ' removida com sucesso!')
+        print('Word '+ unwanted_word + ' sucessfuly removed!')
 
-    def mostra_banco(self):
-        self.cursor.execute("SELECT * FROM palavras")
+    def show_database(self):
+        self.cursor.execute("SELECT * FROM WordsDatabase")
         rows = self.cursor.fetchall()
         for row in rows:
             print(f"ID: {row[0]}, Word: {row[1]}, Played: {row[2]}")
 
-    def gerenciar_banco(self):
+    def manage_database(self):
         while True:
-            self.limpar_tela()
+            self.clean_screen()
             print('''
-            === GERENCIAR BANCO DE PALAVRAS ===
+            === DATABASE MANAGING ===
                   
-            1. Adicionar Palavra
-            2. Remover Palavra
-            3. Consultar Banco Existente
-            4. Voltar ao Menu
+            1. Add New Word
+            2. Remove Word
+            3. Show Database Words
+            4. Return to Menu
             ''')
-            menu_banco = input("Digite sua resposta (1-4): ")
-            match menu_banco:
+            database_menu = input("Type your choice (1-4): ")
+            match database_menu:
                 case '1':
-                    self.limpar_tela()
-                    nova_palavra = input('Digite a palavra a inserir no jogo: ')
-                    self.add_palavra(nova_palavra)
-                    input('Digite qualquer tecla para continuar: ')
+                    self.clean_screen()
+                    new_word = input('Type the new word to be added to the game: ')
+                    self.add_word(new_word)
+                    input('Press any key to continue: ')
                        
                 case '2':
-                    self.limpar_tela()
-                    palavra_indesejada = input('Digite a palavra a ser removida do jogo: ')
-                    self.remove_palavra(palavra_indesejada)
-                    input('Digite qualquer tecla para continuar: ')
+                    self.clean_screen()
+                    unwanted_word = input('Type the word to be removed from the game: ')
+                    self.remove_word(unwanted_word)
+                    input('Press any key to continue: ')
                         
                 case '3':
-                    self.limpar_tela()
-                    self.mostra_banco()
-                    input('Digite qualquer tecla para continuar: ')
+                    self.clean_screen()
+                    self.show_database()
+                    input('Press any key to continue: ')
                 case '4':
                     break
                     
     def reset_db_status(self):
-        self.cursor.execute("UPDATE palavras SET played = 0")
+        self.cursor.execute("UPDATE WordsDatabase SET played = 0")
         self.connection.commit()
-        self.limpar_tela()
-        print("Status das palavras resetado com sucesso!")
-        input('Digite qualquer tecla para continuar: ')     
+        self.clean_screen()
+        print("Database word's status sucessfuly turned to Unplayed!")
+        input('Press any key to continue: ')     
 
-    def get_palavra_jogo(self):
-        self.cursor.execute("SELECT word FROM palavras WHERE played = 0 ORDER BY RANDOM() LIMIT 1")
+    def get_game_word(self):
+        self.cursor.execute("SELECT word FROM WordsDatabase WHERE played = 0 ORDER BY RANDOM() LIMIT 1")
         result = self.cursor.fetchone()
 
         if result:
             word = result[0]
-            self.cursor.execute("UPDATE palavras SET played = 1 WHERE word = ?", (word,))
+            self.cursor.execute("UPDATE WordsDatabase SET played = 1 WHERE word = ?", (word,))
             self.connection.commit()
             return word
         else:
             self.reset_db_status()
-            return self.get_palavra_jogo
+            return self.get_game_word
